@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="longshot">
+<head>
+    <meta charset="utf-8">
+    <title>Longshot!</title>
+    <link rel="stylesheet" href="lib/css/bootstrap.min.css">
+    <link rel="stylesheet" href="lib/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="lib/css/hotkey.min.css">
+    <link rel="stylesheet" href="css/game.css">
+    <script src="lib/js/jquery.min.js"></script>
+    <script src="lib/js/bootstrap.min.js"></script>
+    <script src="lib/js/underscore-min.js"></script>
+    <script src="lib/js/angular.min.js"></script>
+    <script src="lib/js/angular-resource.min.js"></script>
+    <script src="lib/js/hand.js"></script>
+    <script src="lib/js/babylon.js"></script>
+    <script src="lib/js/math.min.js"></script>
+    <script src="lib/js/hotkey.min.js"></script>
+    <script src="lib/js/ui-bootstrap-tpls.min.js"></script>
+    <script src="lib/js/jquery.atmosphere-min.js"></script>
+    <script src="js/longshot.js"></script>
+    <script src="js/game.js"></script>
+</head>
+<body ng-controller="game">
+<div class="gameDiv full">
+    <nav class="navbar navbar-default navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                </button>
+                <a class="navbar-brand" href="#">Longshot!</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">Atirar! <span class="caret"></span></a>
+                        <ul class="dropdown-menu dropdown-menu-wide">
+                            <li>
+                                <div class="panel-body">
+                                    <div>
+                                        X =
+                                        <input class="thickInput" type="text" placeholder="X0"
+                                               ng-model="shot.fx"/>
+
+                                        <div>
+                                            Y = <input class="thickInput" type="text" placeholder="Y0"
+                                                       ng-model="shot.fy"/>
+                                        </div>
+                                        <div>
+                                            Z = <input class="thickInput" type="text" placeholder="Z0"
+                                                       ng-model="shot.fz"/>
+                                        </div>
+                                        <button type="submit" class="btn btn-default" ng-click="shoot();">Atirar!
+                                        </button>
+                                    </div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropwdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">Variáveis auxiliares<span class="caret"></span></a>
+                        <ul class="dropdown-menu dropdown-menu-thin">
+                            <li>
+                                <div class="panel-body">
+                                    <div ng-repeat="prop in shot.variables" class="form-group">
+                                        <label for="V{{$index}}">V{{$index}}</label>
+                                        <input type="number" ng-attr-id="V{{$index}}" class="form-control"
+                                               ng-model="shot.variables[$index]"/>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropwdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">Instruções<span class="caret"></span></a>
+                        <ul class="dropdown-menu dropdown-menu-wide">
+                            <li>
+
+                                <div class="panel-body">
+
+                                    <p>Para montar as equações paramétricas do seu tiro, você pode usar algumas
+                                        variáveis:</p>
+
+                                    <ul>
+                                        <li>X0, Y0 e Z0 armazenam as posições do seu próprio tanque;</li>
+
+                                        <li>t é uma variável que deve ser utilizada para fazer o traçado do tiro. O
+                                            percurso do
+                                            tiro
+                                            será
+                                            gerado calculando a posição do tiro com t variando de 0 a 100;
+                                        </li>
+
+                                        <li>V0, V1, V2, ... V9 são nomes de variáveis que você pode usar para
+                                            facilitar a
+                                            construção
+                                            da
+                                            equação. Elas recebem valores fixos e você deve preencher todas as que
+                                            utilizar nas
+                                            suas
+                                            equações.
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropwdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">Camera<span class="caret"></span></a>
+                        <ul class="dropdown-menu dropdown-menu-wide">
+                            <li ng-repeat="cam in cameras" ng-click="selectCamera(cam)">
+                                <a href="#">{{cam.name}}</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <p class="navbar-text">Pontuação: {{lastShotScore}} / {{totalScore}}</p>
+		    <p class="navbar-text">Pacotes enviados/recebidos: {{packets}} / {{received}}</p>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <p class="navbar-text">{{username}}</p>
+                        </li>
+                        <li>
+                            <p href="#" class="navbar-text navbar-link" ng-click="logoff()">Sair</p>
+                        </li>
+                    </ul>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    Combustível <a href="#" ng-click="refuel()">Encher o tanque</a>
+
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" aria-valuenow="{{gasBarValue()}}" aria-valuemin="0"
+             aria-valuemax="{{gasBarMax()}}" style="width: {{ 100*tank.fuel / tank.FUEL_MAX}}%;">
+            {{ gasBarText() }}%
+        </div>
+    </div>
+
+    <!-- <div>DEBUG {{stage}}</div> -->
+    <div>Turno de {{ findActivePlayerName() }}</div>
+
+    <canvas id="gameCanvas" class="col-md-12"></canvas>
+    <input type="text" ng-model="post"/>
+    <a ng-click="postMessage()">Postar</a><br>
+    <span ng-repeat="post in posts">{{post.message}} - {{post.author}}<br></span>
+</div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+    <changeSet id="1" author="caio.coutinho">
+        <createTable tableName="LS_SHOT_RESULT">
+            <column name="id" type="java.sql.types.BIGINT"></column>
+            <column name="user_id" type="java.sql.types.VARCHAR(255)"></column>
+            <column name="stage_id" type="java.sql.types.BIGINT"></column>
+            <column name="startx" type="java.sql.types.FLOAT"></column>
+            <column name="starty" type="java.sql.types.FLOAT"></column>
+            <column name="startz" type="java.sql.types.FLOAT"></column>
+            <column name="endx" type="java.sql.types.FLOAT"></column>
+            <column name="endy" type="java.sql.types.FLOAT"></column>
+            <column name="endz" type="java.sql.types.FLOAT"></column>
+            <column name="t" type="java.sql.types.BIGINT"></column>
+            <column name="fx" type="java.sql.types.VARCHAR(255)"></column>
+            <column name="fy" type="java.sql.types.VARCHAR(255)"></column>
+            <column name="fz" type="java.sql.types.VARCHAR(255)"></column>
+            <column name="points" type="java.sql.types.BIGINT"></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="caio.coutinho">
+        <addPrimaryKey tableName="LS_SHOT_RESULT" columnNames="id" constraintName="PK_SHOT_RESULT"/>
+    </changeSet>
+
+    <changeSet id="3" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="stage_id"/>
+    </changeSet>
+
+    <changeSet id="4" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="startx"/>
+    </changeSet>
+
+    <changeSet id="5" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="starty"/>
+    </changeSet>
+
+    <changeSet id="6" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="startz"/>
+    </changeSet>
+
+    <changeSet id="7" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="endx"/>
+    </changeSet>
+
+    <changeSet id="8" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="endy"/>
+    </changeSet>
+
+    <changeSet id="9" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="endz"/>
+    </changeSet>
+
+    <changeSet id="10" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="fx"/>
+    </changeSet>
+
+    <changeSet id="11" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="fy"/>
+    </changeSet>
+
+    <changeSet id="12" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="fz"/>
+    </changeSet>
+
+    <changeSet id="13" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="points"/>
+    </changeSet>
+
+    <changeSet id="14" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_SHOT_RESULT" columnName="user_id"/>
+    </changeSet>
+
+
+</databaseChangeLog>

@@ -1,0 +1,96 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+    <changeSet id="1" author="caio.coutinho">
+        <createTable tableName="LS_PLAYER">
+            <column name="id" type="java.sql.types.BIGINT"></column>
+            <column name="stage" type="java.sql.types.BIGINT"></column>
+            <column name="index" type="java.sql.types.BIGINT"></column>
+            <column name="user_id" type="java.sql.types.VARCHAR(255)"></column>
+            <column name="user_name" type="java.sql.types.VARCHAR(255)"></column>
+            <column name="x" type="java.sql.types.FLOAT"></column>
+            <column name="y" type="java.sql.types.FLOAT"></column>
+            <column name="z" type="java.sql.types.FLOAT"></column>
+            <column name="rotx" type="java.sql.types.FLOAT"></column>
+            <column name="roty" type="java.sql.types.FLOAT"></column>
+            <column name="rotz" type="java.sql.types.FLOAT"></column>
+            <column name="points" type="java.sql.types.BIGINT"></column>
+            <column name="health" type="java.sql.types.BIGINT"></column>
+            <column name="skin" type="java.sql.types.VARCHAR(255)"></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="caio.coutinho">
+        <addPrimaryKey tableName="LS_PLAYER" columnNames="id" constraintName="PK_PLAYER"/>
+    </changeSet>
+
+    <changeSet id="3" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="stage"/>
+    </changeSet>
+
+    <changeSet id="4" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="index"/>
+    </changeSet>
+
+    <changeSet id="5" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="x"/>
+    </changeSet>
+
+    <changeSet id="6" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="y"/>
+    </changeSet>
+
+    <changeSet id="7" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="z"/>
+    </changeSet>
+
+    <changeSet id="8" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="rotx"/>
+    </changeSet>
+
+    <changeSet id="9" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="roty"/>
+    </changeSet>
+
+    <changeSet id="10" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="rotz"/>
+    </changeSet>
+
+    <changeSet id="11" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="skin"/>
+    </changeSet>
+
+    <changeSet id="12" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="user_id"/>
+    </changeSet>
+
+    <changeSet id="13" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="points"/>
+    </changeSet>
+
+    <changeSet id="14" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="health"/>
+    </changeSet>
+
+    <changeSet id="15" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_PLAYER" columnName="USER_NAME"/>
+    </changeSet>
+
+    <changeSet id="16" author="caio.coutinho">
+        <addForeignKeyConstraint baseTableName="LS_PLAYER" baseColumnNames="stage"
+                                 constraintName="FK_PLAYER_STAGE"
+                                 referencedTableName="LS_STAGE"
+                                 referencedColumnNames="id"></addForeignKeyConstraint>
+    </changeSet>
+    
+    <changeSet id="17" author="caio.coutinho">
+        <addColumn tableName="LS_PLAYER">
+            <column name="FUEL" type="java.sql.types.BIGINT"></column>
+        </addColumn>
+    </changeSet>
+
+
+</databaseChangeLog>

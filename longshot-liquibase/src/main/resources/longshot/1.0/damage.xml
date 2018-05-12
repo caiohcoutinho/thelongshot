@@ -1,0 +1,39 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+    <changeSet id="1" author="caio.coutinho">
+        <createTable tableName="LS_DAMAGE">
+            <column name="id" type="java.sql.types.BIGINT"></column>
+            <column name="shot_result_id" type="java.sql.types.BIGINT"></column>
+            <column name="damaged_user_id" type="java.sql.types.VARCHAR(255)"></column>
+            <column name="damage" type="java.sql.types.BIGINT"></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="caio.coutinho">
+        <addPrimaryKey tableName="LS_DAMAGE" columnNames="id" constraintName="PK_DAMAGE"/>
+    </changeSet>
+
+    <changeSet id="3" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_DAMAGE" columnName="shot_result_id"/>
+    </changeSet>
+
+    <changeSet id="4" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_DAMAGE" columnName="damaged_user_id"/>
+    </changeSet>
+
+    <changeSet id="5" author="caio.coutinho">
+        <addNotNullConstraint tableName="LS_DAMAGE" columnName="damage"/>
+    </changeSet>
+
+    <changeSet id="6" author="caio.coutinho">
+        <addForeignKeyConstraint baseTableName="LS_DAMAGE" baseColumnNames="shot_result_id"
+                                 constraintName="FK_DAMAGE_SHOT_RESULT  "
+                                 referencedTableName="LS_SHOT_RESULT"
+                                 referencedColumnNames="id"></addForeignKeyConstraint>
+    </changeSet>
+
+</databaseChangeLog>

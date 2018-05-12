@@ -1,0 +1,26 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+    <persistence-unit name="longshot-pu">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>java:jboss/datasources/PostgreSQLDS</jta-data-source>
+
+        <class>longshot.model.Stage</class>
+        <class>longshot.model.stagetype.PlainStage</class>
+        <class>longshot.model.Player</class>
+        <class>longshot.model.Position</class>
+        <class>longshot.model.ShotResult</class>
+        <class>longshot.model.Damage</class>
+
+        <properties>
+            <property name="hibernate.dialect"
+                      value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto"
+                      value="validate"/>
+            <property name="hibernate.show_sql"
+                      value="false"/>
+        </properties>
+
+    </persistence-unit>
+</persistence>
