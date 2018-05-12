@@ -1,3 +1,0 @@
-    $scope.x = 100;
-    $scope.y = 200;
-    $scope.z = -125;

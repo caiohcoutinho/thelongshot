@@ -1,1 +1,0 @@
-var app = angular.module('longshot', ['ngResource', 'cfp.hotkeys', 'ui.bootstrap']);
