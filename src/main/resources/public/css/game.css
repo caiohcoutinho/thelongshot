@@ -1,0 +1,55 @@
+html, body, .menu{
+    height: 90%;
+    margin: 0;
+    padding: 0;
+}
+
+#gameCanvas{
+    width: 100%;
+    height: 90%;
+    touch-action: none;
+}
+
+.full{
+    width: 100%;
+    height: 100%;
+}
+
+.shotMenu{
+    height: 20%;
+}
+
+.grid .row{
+    height: 40%;
+}
+
+.dropdown-menu{
+    height: 400px;
+    overflow-y: scroll;
+}
+
+.thinInput{
+    width: 115px;
+    height: 100px;
+    margin-bottom: 8px;
+}
+
+.thickInput{
+    width: 90%;
+    height: 100px;
+    margin-bottom: 8px;
+}
+
+.dropdown-menu-wide{
+    width: 400%;
+}
+
+.dropdown-menu-thin{
+    width: 100%;
+}
+
+
+.shotMenu .panel{
+    height: 315px;
+    overflow-y: scroll;
+}
