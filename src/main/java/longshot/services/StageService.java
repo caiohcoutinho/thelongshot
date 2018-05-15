@@ -1,22 +1,26 @@
-//package longshot.services;
-//
-//import longshot.model.Stage;
-//import org.springframework.stereotype.Service;
-//
-//import javax.persistence.EntityManager;
-//import javax.persistence.PersistenceContext;
-//import javax.persistence.Query;
-//import java.util.List;
-//
-//@Service
-//public class StageService {
-//
-//    @PersistenceContext
-//    private EntityManager em;
-//
-//    public List<Stage> getStages() {
-//        Query query = em.createQuery("From Stage");
-//        List resultList = query.getResultList();
-//        return resultList;
-//    }
-//}
+package longshot.services;
+
+import longshot.model.entity.Stage;
+
+import java.util.List;
+
+public class StageService extends RestService<Stage> {
+
+    @Override
+    public String getDomainName() {
+        return "stage";
+    }
+
+    @Override
+    public List<Stage> get() {
+        List<Stage> resultList = this.getEntityManager().createQuery("From Stage").getResultList();
+        return resultList;
+    }
+
+    @Override
+    public Stage getById(Long id) {
+        List<Stage> resultList = this.getEntityManager().createQuery("From Stage where id = " + id).getResultList();
+        return resultList.size() > 0 ? resultList.get(0) : null;
+    }
+
+}

@@ -1,15 +1,15 @@
 package longshot.model.stagetype;
 
-import longshot.model.Move;
-import longshot.model.Player;
-import longshot.model.Position;
-import longshot.model.Stage;
+import longshot.model.dto.Move;
+import longshot.model.entity.Player;
+import longshot.model.dto.Position;
+import longshot.model.entity.Stage;
 
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
 /**
- * Created by Naiara on 27/09/2015.
+ * Created by Caio Coutinho on 27/09/2015.
  */
 @Entity
 public class PlainStage extends Stage {

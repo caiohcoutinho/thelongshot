@@ -1,6 +1,11 @@
 package longshot.model.ammo;
 
-import longshot.model.*;
+import longshot.model.dto.Position;
+import longshot.model.dto.Shot;
+import longshot.model.entity.Damage;
+import longshot.model.entity.Player;
+import longshot.model.entity.ShotResult;
+import longshot.model.entity.Stage;
 import net.sourceforge.jeval.EvaluationException;
 import net.sourceforge.jeval.Evaluator;
 
@@ -12,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Naiara on 27/09/2015.
+ * Created by Caio Coutinho on 27/09/2015.
  */
 public class ALCA50 implements Ammo {
 

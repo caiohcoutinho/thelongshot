@@ -1,9 +1,9 @@
-package longshot.model;
+package longshot.model.dto;
 
 import java.util.Date;
 
 /**
- * Created by Naiara on 04/10/2015.
+ * Created by Caio Coutinho on 04/10/2015.
  */
 public class Post {
     private String message;

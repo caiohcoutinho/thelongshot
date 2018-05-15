@@ -1,9 +1,9 @@
-package longshot.model;
+package longshot.model.entity;
 
 import javax.persistence.*;
 
 /**
- * Created by Naiara on 27/09/2015.
+ * Created by Caio Coutinho on 27/09/2015.
  */
 @Entity
 @Table(name = "LS_DAMAGE")

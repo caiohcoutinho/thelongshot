@@ -1,4 +1,7 @@
-package longshot.model;
+package longshot.model.entity;
+
+import longshot.model.dto.Move;
+import longshot.model.dto.Position;
 
 import javax.persistence.*;
 import java.util.ArrayList;

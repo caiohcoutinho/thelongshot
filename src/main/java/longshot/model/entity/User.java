@@ -1,4 +1,4 @@
-package longshot.model;
+package longshot.model.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * Created by Naiara on 18/09/2015.
+ * Created by Caio Coutinho on 18/09/2015.
  */
 @Entity
 @Table(name = "LS_USER")

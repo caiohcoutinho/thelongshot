@@ -1,9 +1,9 @@
-package longshot.model;
+package longshot.model.dto;
 
 import java.util.List;
 
 /**
- * Created by Naiara on 27/09/2015.
+ * Created by Caio Coutinho on 27/09/2015.
  */
 public class Shot {
     private String userId;

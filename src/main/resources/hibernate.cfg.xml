@@ -1,0 +1,29 @@
+<!--
+  ~ Hibernate, Relational Persistence for Idiomatic Java
+  ~
+  ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later.
+  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+<hibernate-configuration>
+    <session-factory><!-- Database connection settings -->
+        <property name="connection.driver_class">org.postgresql.Driver</property>
+        <!--
+        <property name="connection.url">jdbc:postgresql://pellefant.db.elephantsql.com:5432/wmpqswgu</property>
+        <property name="connection.username">wmpqswgu</property>
+        <property name="connection.password">EnxRdaMzPYsZ-RUzq4Ka1i9VnWIeJ0WO</property>
+        -->
+        <property name="connection.url">jdbc:postgresql://localhost:5432/longshot</property>
+        <property name="connection.username">longshot</property>
+        <property name="connection.password">longshot</property>
+        <property name="connection.pool_size">1</property>
+        <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+        <property name="cache.provider_class">org.hibernate.cache.internal.NoCacheProvider</property>
+        <property name="show_sql">true</property>
+        <property name="hbm2ddl.auto">validate</property>
+
+        <mapping class="longshot.model.entity.Stage"/>
+        <mapping class="longshot.model.entity.Player"/>
+        <mapping class="longshot.model.entity.Damage"/>
+        <mapping class="longshot.model.entity.ShotResult"/>
+    </session-factory>
+</hibernate-configuration>

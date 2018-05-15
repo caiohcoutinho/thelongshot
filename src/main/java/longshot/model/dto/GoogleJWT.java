@@ -1,7 +1,7 @@
-package longshot.model;
+package longshot.model.dto;
 
 /**
- * Created by Naiara on 26/09/2015.
+ * Created by Caio Coutinho on 26/09/2015.
  */
 public class GoogleJWT {
 

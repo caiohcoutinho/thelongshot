@@ -1,4 +1,4 @@
-package longshot.model;
+package longshot.model.dto;
 
 /**
  * Created by Caio on 30/09/2015.

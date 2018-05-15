@@ -1,11 +1,11 @@
-package longshot.model;
+package longshot.model.dto;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 
 /**
- * Created by Naiara on 27/09/2015.
+ * Created by Caio Coutinho on 27/09/2015.
  */
 @Embeddable
 public class Position {

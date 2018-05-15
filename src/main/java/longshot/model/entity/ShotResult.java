@@ -1,10 +1,12 @@
-package longshot.model;
+package longshot.model.entity;
+
+import longshot.model.dto.Position;
 
 import javax.persistence.*;
 import java.util.List;
 
 /**
- * Created by Naiara on 27/09/2015.
+ * Created by Caio Coutinho on 27/09/2015.
  */
 @Entity
 @Table(name = "LS_SHOT_RESULT")

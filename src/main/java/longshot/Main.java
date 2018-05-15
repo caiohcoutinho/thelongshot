@@ -16,8 +16,13 @@
 
 package longshot;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import fi.iki.elonen.NanoHTTPD;
+import longshot.model.CustomGson;
+import longshot.services.RestService;
+import longshot.services.StageService;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,6 +31,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -45,7 +51,7 @@ import java.util.Map.Entry;
 public class Main extends NanoHTTPD {
 
     public static final int PORT = 5000;
-    private final Map<String, String> STATIC_MIME_TYPE_MAP = Maps.newHashMap();
+    private static final Map<String, String> STATIC_MIME_TYPE_MAP = Maps.newHashMap();
     {
         STATIC_MIME_TYPE_MAP.put("css", "text/css");
         STATIC_MIME_TYPE_MAP.put("html", "text/html");
@@ -55,6 +61,10 @@ public class Main extends NanoHTTPD {
         STATIC_MIME_TYPE_MAP.put("woff", "application/font-woff");
         STATIC_MIME_TYPE_MAP.put("woff2", "application/font-woff2");
         STATIC_MIME_TYPE_MAP.put("ico", "image/x-icon");
+    }
+    private static final List<RestService> REST_SERVICES = Lists.newArrayList();
+    {
+        REST_SERVICES.add(new StageService());
     }
 
     public Main() throws IOException {
@@ -74,7 +84,6 @@ public class Main extends NanoHTTPD {
     @Override
     public Response serve(IHTTPSession session) {
         String uri = session.getUri();
-        System.out.println(session.getMethod()+" "+uri);
         Response response = null;
         for (Entry<String, String> entry : STATIC_MIME_TYPE_MAP.entrySet()) {
             if (uri.endsWith(entry.getKey())) {
@@ -90,7 +99,31 @@ public class Main extends NanoHTTPD {
                 return response;
             }
         }
-        
+        String restPrefix = "/rest";
+        if(uri.startsWith(restPrefix)){
+            Method method = session.getMethod();
+            System.out.println(method +" "+uri);
+            String domain = uri.substring(restPrefix.length());
+
+            String body = "";
+
+            if(method.equals(Method.GET)) {
+                for (RestService restService : REST_SERVICES) {
+                    String serviceDomainName = "/" + restService.getDomainName();
+                    if (domain.startsWith(serviceDomainName)) {
+                        if (domain.equals(serviceDomainName)) {
+                            body = CustomGson.GSON.toJson(restService.get());
+                        } else{
+                            body = CustomGson.GSON.toJson(restService.getById(
+                                    Long.parseLong(domain.substring(serviceDomainName.length()+1))));
+                        }
+                    }
+                }
+            }
+            response = newFixedLengthResponse(body);
+            response.setMimeType("application/json");
+            return response;
+        }
         return response;
     }
 
