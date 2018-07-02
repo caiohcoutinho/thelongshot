@@ -1,21 +1,70 @@
 var app = angular.module('longshot');
 
+
+var auth2;
+
 app.controller("stage", ['$scope', '$element', '$resource', '$modal', function($scope, $element, $resource, $modal){
 
-    /**
-    var userEndpoint = 'rest/user';
-    var userResource = $resource(userEndpoint, {}, {
-        logoff: {method: 'POST', url: userEndpoint+'/logoff'},
-        logged: {method: 'GET', url: userEndpoint+'/logged'},
-        token: {method: 'POST', url: userEndpoint+'/token'}
+    var sessionEndpoint = 'rest/session';
+    var sessionResource = $resource(sessionEndpoint, {});
+
+    $scope.loginFailed = true;
+
+    var cookiePrefix = "userTokenId=";
+    var battleCookiePrefix = "battleId=";
+    var getTokenIdFromCookie = function(){
+        var cookie = _.find(decodeURIComponent(document.cookie).split(';'), function(cookie){
+            return cookie.trim().startsWith(cookiePrefix);
+        });
+        if(!_.isUndefined(cookie)){
+            return cookie.trim().substring(cookiePrefix.length);
+        }
+    }
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        var expires = "expires="+ d.toUTCString();
+        document.cookie = cname + cvalue + ";" + expires + ";path=/";
+    }
+
+    gapi.load('auth2', function(){
+        auth2 = gapi.auth2.init({
+            client_id: '405402394589-f20c532e75fn33c541jfbu5ta179bko4.apps.googleusercontent.com'
+        });
+        var userTokenId = getTokenIdFromCookie();
+        if(_.isUndefined(userTokenId)){
+            killCookiesAndRedirect();
+        } else{
+            sessionResource.get({userTokenId: userTokenId}, function(longshotSession){
+                if(_.isUndefined(longshotSession) ||
+                    _.isUndefined(longshotSession.username) ||
+                    _.isUndefined(longshotSession.userLogoUrl)){
+                    killCookiesAndRedirect();
+                }
+                $scope.loginFailed = false;
+                $scope.username = longshotSession.username;
+                $scope.userLogoUrl = longshotSession.userLogoUrl;
+                refreshStages();
+            }, function(){
+                killCookiesAndRedirect();
+            });
+        }
     });
 
+    var killCookiesAndRedirect = function(){
+        setCookie(cookiePrefix, -1, -1);
+        setCookie(battleCookiePrefix, -1, -1);
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut();
+        window.location.href = "/index.html";
+    }
+
     $scope.logoff = function(){
-        userResource.logoff({}, function(){
-            window.location.href = "/"
+        var userTokenId = getTokenIdFromCookie();
+        sessionResource.remove({userTokenId: userTokenId}, function(){
+            killCookiesAndRedirect();
         });
     }
-    **/
 
     var defaultSuccessCallback = function(a, b, c){
         alert("success");
@@ -29,23 +78,7 @@ app.controller("stage", ['$scope', '$element', '$resource', '$modal', function($
         window.e = e;
     }
 
-    var isLogged = true;
-    $scope.userLogged = isLogged;
     jQuery('.stageDiv').show();
-
-    /**
-    userResource.logged({}, function(logged){
-        var isLogged = logged.username != null;
-        $scope.userLogged = isLogged;
-        if(isLogged){
-            $scope.username = logged.username;
-            $scope.picture = logged.picture;
-            jQuery('.stageDiv').show();
-        } else {
-            window.location.href = "/";
-        }
-    });
-    **/
 
     var sortStages = function(){
         $scope.userStages = _.sortBy($scope.userStages, "name");
@@ -53,24 +86,20 @@ app.controller("stage", ['$scope', '$element', '$resource', '$modal', function($
     }
 
     var stageEndpoint = "rest/stage/";
-    var stageResource = $resource(stageEndpoint+':id', {id: '@id'},{
-        play : {method: 'POST', url: stageEndpoint+"play/:id"}
-    });
+    var stageResource = $resource(stageEndpoint, {});
 
     var refreshStages = function(){
-        stageResource.get(function(stages){
-            var userStages = JSON.parse(stages.userStages);
+        stageResource.get({}, function(stages){
+            var userStages = stages.userStages;
             if(userStages.length == 1){
                 $scope.selectedStage = userStages[0];
                 $scope.isStageListHidden = true;
             }
             $scope.userStages = userStages;
-            $scope.openStages = JSON.parse(stages.openStages);
+            $scope.openStages = stages.openStages;
             sortStages();
         });
     }
-
-    refreshStages();
 
     $scope.showUserStages = function(){
         jQuery('.openStageDiv').hide();
@@ -123,6 +152,10 @@ app.controller("stage", ['$scope', '$element', '$resource', '$modal', function($
         if(_.isUndefined(stage)){
             stage = $scope.selectedStage
         }
+        //window.location.href = "rest/battle/"+stage.id;
+        setCookie(battleCookiePrefix, stage.id);
+        window.location.href = "game.html";
+        /*
         stageResource.play(stage, function(json){
             var response = json.response;
             if(response == "ready"){
@@ -131,6 +164,7 @@ app.controller("stage", ['$scope', '$element', '$resource', '$modal', function($
                 $scope.showInfoMessage = "A sala ainda não está completa.";
             }
         }, defaultErrorCallback)
+        */
     };
     $scope.saveStage = function(){
         stageResource.save($scope.selectedStage, function(value){

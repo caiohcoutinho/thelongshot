@@ -54,7 +54,7 @@ public abstract class Stage {
         return selectedPlayer;
     }
 
-    @Column(name = "active_player_id")
+    @Column(name = "active_player_index")
     public Long getActivePlayerId() {
         return activePlayerId;
     }

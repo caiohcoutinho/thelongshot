@@ -1,60 +1,43 @@
 var app = angular.module('longshot');
 
-app.controller("welcome", ['$scope', '$resource', '$location', function($scope, $resource, $location){
+var onSignIn;
 
-    $scope.userLogged = true;
-    window.location.href = "/stage.html";
-    return;
+app.controller("welcome", ['$scope', '$resource', function($scope, $resource){
 
-    var userEndpoint = 'rest/user';
-    var userResource = $resource(userEndpoint, {}, {
-        logoff: {method: 'POST', url: userEndpoint+'/logoff'},
-        logged: {method: 'GET', url: userEndpoint+'/logged'},
-        token: {method: 'POST', url: userEndpoint+'/token'}
-    });
-    var googleAuthResource = $resource('https://accounts.google.com/o/oauth2/v2/auth');
+    var sessionEndpoint = 'rest/session';
+    var sessionResource = $resource(sessionEndpoint, {});
 
-    $scope.hasCookies = navigator.cookieEnabled;
-
-    var redirect_uri = $location.absUrl();
-
-    if(redirect_uri.indexOf("localhost") != -1){
-        // Workaround for dev
-        redirect_uri = "http://localhost:8080/rest/user/code";
-    } else{
-        redirect_uri = "http://longshot-pcmaker.rhcloud.com/rest/user/code";
+    var cookiePrefix = "userTokenId="
+    var getTokenIdFromCookie = function(){
+        var cookie = _.find(decodeURIComponent(document.cookie).split(';'), function(cookie){
+            return cookie.trim().startsWith(cookiePrefix);
+        });
+        if(!_.isUndefined(cookie)){
+            return cookie.trim().substring(cookiePrefix.length);
+        }
+    }
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        var expires = "expires="+ d.toUTCString();
+        document.cookie = cname + cvalue + ";" + expires + ";path=/";
     }
 
-    $scope.login = function(){
-        userResource.token({}, function(token){
-            var url = 'https://accounts.google.com/o/oauth2/v2/auth?'+
-                'client_id=405402394589-f20c532e75fn33c541jfbu5ta179bko4.apps.googleusercontent.com&'+
-                'redirect_uri='+escape(redirect_uri)+'&'+
-                'response_type=code&'+
-                'scope=openid+profile&'+
-                'state='+token.sessionToken;
-            window.location.href = url;
+    $scope.loginFailed = _.isUndefined(getTokenIdFromCookie());
+
+    onSignIn = function(googleUser){
+        var tokenId = googleUser.getAuthResponse().id_token;
+        var profile = googleUser.getBasicProfile();
+        var userId = profile.getId();
+        var username = profile.getName();
+        var userLogoUrl = profile.getImageUrl();
+
+        setCookie(cookiePrefix, tokenId, 1);
+        sessionResource.save({userId: userId, userTokenId: tokenId, username: username, userLogoUrl: userLogoUrl}, function(){
+            window.location.href = "/stage.html";
         });
     }
 
-    var defaultSuccessCallback = function(a, b, c){
-        alert("success");
-        window.a = a;
-        window.b = b;
-        window.c = c;
-    }
-
-    var defaultErrorCallback = function(e){
-        alert("error");
-        window.e = e;
-    }
-
-    userResource.logged({}, function(logged){
-        var isLogged = logged.username != null;
-        if(isLogged){
-            window.location.href = "/stage.html"
-        }
-        $scope.userLogged = isLogged;
-    });
-
 }])
+
+

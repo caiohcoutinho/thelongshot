@@ -13,11 +13,14 @@
     <script src="lib/js/angular-resource.min.js"></script>
     <script src="lib/js/hotkey.min.js"></script>
     <script src="lib/js/ui-bootstrap-tpls.min.js"></script>
+    <meta name="google-signin-scope" content="profile">
+    <meta name="google-signin-client_id" content="405402394589-f20c532e75fn33c541jfbu5ta179bko4.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js"></script>
     <script src="js/longshot.js"></script>
     <script src="js/welcome.js"></script>
 </head>
 <body ng-controller="welcome">
-<div ng-show="userLogged == false">
+<div ng-show="loginFailed">
     <nav class="navbar navbar-default navbar-inverse">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -43,13 +46,16 @@
         <h3>Melhore sua habilidade, conquiste novas munições, enfrente e derrote seus adversários online!</h3><br>
 
         <h3>Faça seu login e comece a jogar <em>agora!</em></h3>
-        <span ng-if="!hasCookies">
-            <p><a class="btn btn-primary btn-lg" href="#" ng-click="" disabled="disabled" role="button">Login</a></p>
-            <p class="label label-danger">Você precisa habilitar os cookies do seu navegador para poder jogar
-                ls.</p>
-        </span>
 
-        <p ng-if="hasCookies"><a class="btn btn-primary btn-lg" href="#" ng-click="login()" role="button">Login</a></p>
+        <div id="signin-button" class="btn btn-primary btn-lg g-signin2" data-onsuccess="onSignIn"
+             role="button" data-theme="dark"></div>
+
+        <!--
+        Login falhou? {{loginFailed}}
+
+        <a href="#" ng-click="signOut();">Sign out</a>
+        -->
+
     </div>
     <img class="col-md-6" src="jpg/image/welcome.png"/>
 </div>

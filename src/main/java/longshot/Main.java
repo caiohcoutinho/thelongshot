@@ -21,19 +21,30 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import fi.iki.elonen.NanoHTTPD;
 import longshot.model.CustomGson;
+import longshot.model.dto.LongshotSession;
+import longshot.services.BattleService;
 import longshot.services.RestService;
+import longshot.services.SessionService;
 import longshot.services.StageService;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static fi.iki.elonen.NanoHTTPD.Method.GET;
+import static fi.iki.elonen.NanoHTTPD.Method.POST;
+import static fi.iki.elonen.NanoHTTPD.Response.Status.OK;
+import static fi.iki.elonen.NanoHTTPD.Response.Status.UNAUTHORIZED;
+import static longshot.model.CustomGson.GSON;
 
 /**
  * import org.springframework.boot.SpringApplication;
@@ -51,6 +62,7 @@ import java.util.Map.Entry;
 public class Main extends NanoHTTPD {
 
     public static final int PORT = 5000;
+    private static SessionService sessionService = new SessionService();
     private static final Map<String, String> STATIC_MIME_TYPE_MAP = Maps.newHashMap();
     {
         STATIC_MIME_TYPE_MAP.put("css", "text/css");
@@ -62,9 +74,18 @@ public class Main extends NanoHTTPD {
         STATIC_MIME_TYPE_MAP.put("woff2", "application/font-woff2");
         STATIC_MIME_TYPE_MAP.put("ico", "image/x-icon");
     }
+    private static final List<RestService> PROTECTED_REST_SERVICES = Lists.newArrayList();
     private static final List<RestService> REST_SERVICES = Lists.newArrayList();
     {
-        REST_SERVICES.add(new StageService());
+        StageService stage = new StageService();
+        SessionService session = new SessionService();
+        BattleService battle = new BattleService();
+
+        REST_SERVICES.add(session);
+        REST_SERVICES.add(stage);
+        REST_SERVICES.add(battle);
+        PROTECTED_REST_SERVICES.add(stage);
+        PROTECTED_REST_SERVICES.add(battle);
     }
 
     public Main() throws IOException {
@@ -84,7 +105,13 @@ public class Main extends NanoHTTPD {
     @Override
     public Response serve(IHTTPSession session) {
         String uri = session.getUri();
+        CookieHandler cookieHandler = new CookieHandler(session.getHeaders());
+        String userTokenId = cookieHandler.read("userTokenId");
         Response response = null;
+
+        Map<String, List<String>> queryStringParams = session.getParameters();
+        LongshotSession longshotSession = sessionService.get(cookieHandler, queryStringParams);
+
         for (Entry<String, String> entry : STATIC_MIME_TYPE_MAP.entrySet()) {
             if (uri.endsWith(entry.getKey())) {
                 if(entry.getKey().startsWith("text")) {
@@ -92,38 +119,61 @@ public class Main extends NanoHTTPD {
                     response = newFixedLengthResponse(body);
                 } else{
                     byte[] data = readFileAsBytes(uri);
-                    response = newFixedLengthResponse(Response.Status.OK, entry.getValue(),
+                    response = newFixedLengthResponse(OK, entry.getValue(),
                             new ByteArrayInputStream(data), data.length);
                 }
                 response.setMimeType(entry.getValue());
                 return response;
             }
         }
+
+        String body = "";
         String restPrefix = "/rest";
-        if(uri.startsWith(restPrefix)){
-            Method method = session.getMethod();
-            System.out.println(method +" "+uri);
-            String domain = uri.substring(restPrefix.length());
 
-            String body = "";
-
-            if(method.equals(Method.GET)) {
-                for (RestService restService : REST_SERVICES) {
-                    String serviceDomainName = "/" + restService.getDomainName();
-                    if (domain.startsWith(serviceDomainName)) {
-                        if (domain.equals(serviceDomainName)) {
-                            body = CustomGson.GSON.toJson(restService.get());
-                        } else{
-                            body = CustomGson.GSON.toJson(restService.getById(
-                                    Long.parseLong(domain.substring(serviceDomainName.length()+1))));
-                        }
-                    }
-                }
+        Method method = session.getMethod();
+        System.out.println(method +" "+uri);
+        String domain = uri.substring(restPrefix.length());
+        RestService matchedRestService = null;
+        for (RestService restService : REST_SERVICES) {
+            if (domain.startsWith("/" + restService.getDomainName())) {
+                matchedRestService = restService;
+                break;
             }
-            response = newFixedLengthResponse(body);
-            response.setMimeType("application/json");
+        }
+
+        if(matchedRestService == null){
             return response;
         }
+
+        if(uri.startsWith(restPrefix) && PROTECTED_REST_SERVICES.contains(matchedRestService)) {
+            if(userTokenId == null || longshotSession == null){
+                response = newFixedLengthResponse(UNAUTHORIZED, "application/json", null);
+                return response;
+            }
+        }
+
+        String serviceDomainName = "/"+matchedRestService.getDomainName();
+        if(method.equals(GET)) {
+            if (domain.equals(serviceDomainName)) {
+                body = GSON.toJson(matchedRestService.get(cookieHandler, queryStringParams));
+            } else{
+                body = GSON.toJson(matchedRestService.getById(cookieHandler, queryStringParams,
+                        domain.substring(serviceDomainName.length()+1)));
+            }
+        } else if(method.equals(POST)){
+            Map<String, String> files = Maps.newHashMap();
+            try {
+                session.parseBody(files);
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            String postData = files.get("postData");
+            Object postReturn = matchedRestService.post(cookieHandler, queryStringParams, postData);
+            body = GSON.toJson(postReturn);
+        }
+        response = newFixedLengthResponse(body);
+        response.setMimeType("application/json");
+        response.setStatus(OK);
         return response;
     }
 

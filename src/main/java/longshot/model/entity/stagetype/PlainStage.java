@@ -1,4 +1,4 @@
-package longshot.model.stagetype;
+package longshot.model.entity.stagetype;
 
 import longshot.model.dto.Move;
 import longshot.model.entity.Player;

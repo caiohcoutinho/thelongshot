@@ -18,11 +18,14 @@
     <script src="lib/js/hotkey.min.js"></script>
     <script src="lib/js/ui-bootstrap-tpls.min.js"></script>
     <script src="lib/js/jquery.atmosphere-min.js"></script>
+    <meta name="google-signin-scope" content="profile">
+    <meta name="google-signin-client_id" content="405402394589-f20c532e75fn33c541jfbu5ta179bko4.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js"></script>
     <script src="js/longshot.js"></script>
     <script src="js/game.js"></script>
 </head>
 <body ng-controller="game">
-<div class="gameDiv full">
+<div class="gameDiv full" ng-show="!loginFailed">
     <nav class="navbar navbar-default navbar-inverse">
         <div class="container-fluid">
             <div class="navbar-header">

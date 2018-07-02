@@ -1,5 +1,6 @@
 package longshot.services;
 
+import fi.iki.elonen.NanoHTTPD;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -7,8 +8,9 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Map;
 
-public abstract class RestService<T> {
+public abstract class RestService {
 
     protected static SessionFactory sessionFactory;
     {
@@ -30,6 +32,7 @@ public abstract class RestService<T> {
     }
 
     public abstract String getDomainName();
-    public abstract List<T> get();
-    public abstract T getById(Long id);
+    public abstract Object get(NanoHTTPD.CookieHandler cookieHandler, Map<String, List<String>> queryStringParams);
+    public abstract Object getById(NanoHTTPD.CookieHandler cookieHandler, Map<String, List<String>> queryStringParams, String id);
+    public abstract Object post(NanoHTTPD.CookieHandler cookieHandler, Map<String, List<String>> queryStringParams, String json);
 }

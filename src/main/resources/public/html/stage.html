@@ -14,11 +14,14 @@
     <script src="lib/js/angular-resource.min.js"></script>
     <script src="lib/js/hotkey.min.js"></script>
     <script src="lib/js/ui-bootstrap-tpls.min.js"></script>
+    <meta name="google-signin-scope" content="profile">
+    <meta name="google-signin-client_id" content="405402394589-f20c532e75fn33c541jfbu5ta179bko4.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js"></script>
     <script src="js/longshot.js"></script>
     <script src="js/stage.js"></script>
 </head>
 <body ng-controller="stage">
-<div style="display: none" class="stageDiv full">
+<div class="stageDiv full" ng-show="!loginFailed">
     <script type="text/ng-template" id="removeStageModal.html">
         <div class="modal-header">
             <h3 class="modal-title">Remover sala</h3>
@@ -90,6 +93,9 @@
                             <label for="stageDescriptionForm">Nome da sala</label>
                             <input id="stageDescriptionForm" class="form-control" type="text"
                                    ng-model="selectedStage.name"/>
+                            <label for="stagePlayersNumberForm">Quantidade de jogadores</label>
+                            <input id="stagePlayersNumberForm" class="form-control" type="number"
+                                   ng-model="selectedStage.playersNumber"/>
                         </div>
                     </div>
 

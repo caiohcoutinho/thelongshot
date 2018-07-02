@@ -2,22 +2,75 @@ var app = angular.module('longshot');
 
 app.controller("game", ['$scope', '$element', 'hotkeys', '$resource', function($scope, $element, hotkeys, $resource){
 
-    var userEndpoint = 'rest/user';
-    var userResource = $resource(userEndpoint, {}, {
-        logoff: {method: 'POST', url: userEndpoint+'/logoff'},
-        logged: {method: 'GET', url: userEndpoint+'/logged'},
-        token: {method: 'POST', url: userEndpoint+'/token'}
-    });
-
     var battleEndpoint = 'rest/battle';
-    var battleResource = $resource(battleEndpoint, {}, {
-        game: {method: 'GET', url: battleEndpoint+"/game"}
-    });
+    var battleResource = $resource(battleEndpoint, {}, {});
 
+    var sessionEndpoint = 'rest/session';
+    var sessionResource = $resource(sessionEndpoint, {});
+
+    $scope.loginFailed = true;
+
+    var cookiePrefix = "userTokenId=";
+    var battleCookiePrefix = "battleId=";
+    var getTokenIdFromCookie = function(){
+        var cookie = _.find(decodeURIComponent(document.cookie).split(';'), function(cookie){
+            return cookie.trim().startsWith(cookiePrefix);
+        });
+        if(!_.isUndefined(cookie)){
+            return cookie.trim().substring(cookiePrefix.length);
+        }
+    }
+    var getStageIdFromCookie = function(){
+        var cookie = _.find(decodeURIComponent(document.cookie).split(';'), function(cookie){
+            return cookie.trim().startsWith(battleCookiePrefix);
+        });
+        if(!_.isUndefined(cookie)){
+            return cookie.trim().substring(battleCookiePrefix.length);
+        }
+    }
+
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        var expires = "expires="+ d.toUTCString();
+        document.cookie = cname + cvalue + ";" + expires + ";path=/";
+    }
+
+    var killCookiesAndRedirect = function(){
+        setCookie(cookiePrefix, -1, -1);
+        setCookie(battleCookiePrefix, -1, -1);
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut();
+        window.location.href = "/index.html";
+    }
+
+    gapi.load('auth2', function(){
+        auth2 = gapi.auth2.init({
+            client_id: '405402394589-f20c532e75fn33c541jfbu5ta179bko4.apps.googleusercontent.com'
+        });
+        var userTokenId = getTokenIdFromCookie();
+        if(_.isUndefined(userTokenId)){
+            killCookiesAndRedirect();
+        } else{
+            sessionResource.get({userTokenId: userTokenId}, function(longshotSession){
+                if(_.isUndefined(longshotSession) ||
+                    _.isUndefined(longshotSession.username) ||
+                    _.isUndefined(longshotSession.userLogoUrl)){
+                    killCookiesAndRedirect();
+                }
+                $scope.loginFailed = false;
+                $scope.username = longshotSession.username;
+                $scope.userLogoUrl = longshotSession.userLogoUrl;
+            }, function(){
+                killCookiesAndRedirect();
+            });
+        }
+    });
 
     $scope.logoff = function(){
-        userResource.logoff({}, function(){
-            window.location.href = "/"
+        var userTokenId = getTokenIdFromCookie();
+        sessionResource.remove({userTokenId: userTokenId}, function(){
+            killCookiesAndRedirect();
         });
     }
 
@@ -115,9 +168,6 @@ app.controller("game", ['$scope', '$element', 'hotkeys', '$resource', function($
         if(!!player){
             return player.userName;
         }
-        console.log("Active player not found.");
-        console.log($scope.stage.activePlayerId);
-        console.log(JSON.stringify($scope.stage.players));
         return "???"
     }
 
@@ -129,55 +179,42 @@ app.controller("game", ['$scope', '$element', 'hotkeys', '$resource', function($
         return res;
     }
 
+    var moveSelectedPlayer = function(){
+        // does it?
+    }
+
     $scope.moveTankForward = function(){
         if($scope.hasGas() && isMyTurn()){
-            if($scope.subSocketBattle){
-                var t = $scope.tank;
-                var a = t.rotation.y;
-                var x = t.position.x - $scope.VEL*math.sin(a);
-                var y = t.position.y;
-                var z = t.position.z - $scope.VEL*math.cos(a);
-		$scope.packets++;
-                $scope.subSocketBattle.push(JSON.stringify({move: {rotation: t.rotation, newRotation: t.rotation, position: t.position, newPosition: {x: x, y: y, z: z}}}));
-            }
+            $scope.packets++;
+            battleResource.post(JSON.stringify({move: "forward", playerId: $scope.stage.selectedPlayerId}, moveSelectedPlayer);
         }
     }
 
     $scope.moveTankBackward = function(){
         if($scope.hasGas() && isMyTurn()){
-            if($scope.subSocketBattle){
-                var t = $scope.tank;
-                var a = t.rotation.y;
-                var x = t.position.x + $scope.VEL*math.sin(a);
-                var y = t.position.y;
-                var z = t.position.z + $scope.VEL*math.cos(a);
-		$scope.packets++;
-                $scope.subSocketBattle.push(JSON.stringify({move: {rotation: t.rotation, newRotation: t.rotation, position: t.position, newPosition: {x: x, y: y, z: z}}}));
-            }
+        $scope.packets++;
+        }
+            battleResource.post(JSON.stringify({move: "forward", playerId: $scope.stage.selectedPlayerId}, moveSelectedPlayer);
         }
     }
 
     $scope.spinTankLeft = function(){
         if($scope.hasGas() && isMyTurn()){
-            if($scope.subSocketBattle){
                 var t = $scope.tank;
                 var rot = t.rotation;
                 var a = rot.y - $scope.ANG_VEL;
 		$scope.packets++;
                 $scope.subSocketBattle.push(JSON.stringify({move: {rotation: t.rotation, newRotation: {x: rot.x, y: a, z: rot.z}, position: t.position, newPosition: t.position}}));
-            }
         }
     }
 
     $scope.spinTankRight = function(){
         if($scope.hasGas() && isMyTurn()){
-            if($scope.subSocketBattle){
                 var t = $scope.tank;
                 var rot = t.rotation;
                 var a = rot.y + $scope.ANG_VEL;
 		$scope.packets++;
                 $scope.subSocketBattle.push(JSON.stringify({move: {rotation: t.rotation, newRotation: {x: rot.x, y: a, z: rot.z}, position: t.position, newPosition: t.position}}));
-            }
         }
     }
 
@@ -245,7 +282,9 @@ app.controller("game", ['$scope', '$element', 'hotkeys', '$resource', function($
             var fz = $scope.shot.fz || "Z0";
 
 	    $scope.packets++;
-            $scope.subSocketBattle.push(JSON.stringify({shot: {
+
+	        // TODO: Here I have to send this shot to the server.
+            console.log(JSON.stringify({shot: {
                 variables: _.values($scope.shot.variables),
                 stageId: $scope.stage.id,
                 fx: fx, fy: fy, fz: fz,
@@ -257,7 +296,7 @@ app.controller("game", ['$scope', '$element', 'hotkeys', '$resource', function($
     function isMyTurn(){
         var res = !!$scope.stage && !!$scope.stage.selectedPlayer && $scope.stage.selectedPlayer.id == $scope.stage.activePlayerId;
         if(res == false){
-            console.log("Not my turn");
+            //console.log("Not my turn");
         }
         return res;
     }
@@ -273,7 +312,8 @@ app.controller("game", ['$scope', '$element', 'hotkeys', '$resource', function($
     }
 
     var startGame = function(){
-        battleResource.game({},{}, function(stage){
+        var stageId = getStageIdFromCookie();
+        battleResource.get({stageId: stageId, action: "startGame"},{}, function(stage){
             $scope.stage = stage;
             var canvas = $element.find('canvas')[0];
             $scope.canvas = canvas;
@@ -432,63 +472,64 @@ app.controller("game", ['$scope', '$element', 'hotkeys', '$resource', function($
                 engine.resize();
             });
 
-            var transport = "websocket";
+            //var transport = "websocket";
 
-            var urlChat = "ws://"+location.hostname+":8000/ws/chat/"+stage.id;
-            if(location.hostname.indexOf("localhost") >= 0){
-                urlChat = "/ws/chat/"+stage.id;
-            }
+            //var urlChat = "ws://"+location.hostname+":8000/ws/chat/"+stage.id;
+            //if(location.hostname.indexOf("localhost") >= 0){
+            //    urlChat = "/ws/chat/"+stage.id;
+            //}
 
-            var socket = $.atmosphere;
-            var requestChat = {
-                url: urlChat,
-                contentType: "application/json",
-                transport: 'websocket',
-                trackMessageLength : true,
-                fallbackTransport: 'long-polling'
-            };
+            //var socket = $.atmosphere;
+            //var requestChat = {
+            //    url: urlChat,
+            //    contentType: "application/json",
+            //    transport: 'websocket',
+            //    trackMessageLength : true,
+            //    fallbackTransport: 'long-polling'
+            //};
 
-            requestChat.onOpen = function(response){
-                console.log("Conexão aberta chat: "+response.transport);
-            }
+            //requestChat.onOpen = function(response){
+            //    console.log("Conexão aberta chat: "+response.transport);
+            //}
 
-            requestChat.onError = function(response){
-                console.log("Erro chat: "+response.transport);
-            }
+            //requestChat.onError = function(response){
+            //    console.log("Erro chat: "+response.transport);
+            //}
 
-            $scope.posts = [];
-            requestChat.onMessage = function(response){
-                $scope.posts.push(JSON.parse(response.responseBody));
-                $scope.$apply();
-            }
+            //$scope.posts = [];
+            //requestChat.onMessage = function(response){
+            //    $scope.posts.push(JSON.parse(response.responseBody));
+            //    $scope.$apply();
+            //}
 
-            var subSocketChat = socket.subscribe(requestChat);
-            $scope.subSocketChat = subSocketChat;
+            //var subSocketChat = socket.subscribe(requestChat);
+            //$scope.subSocketChat = subSocketChat;
 
-            var urlBattle = "ws://"+location.hostname+":8000/ws/battle/"+stage.id;
+            //var urlBattle = "ws://"+location.hostname+":8000/ws/battle/"+stage.id;
 
-            if(location.hostname.indexOf("localhost") >= 0){
-                urlBattle = "/ws/battle/"+stage.id;
-            }
+            //if(location.hostname.indexOf("localhost") >= 0){
+            //    urlBattle = "/ws/battle/"+stage.id;
+            //}
 
-            var requestBattle = {
-                url: urlBattle,
-                contentType: "application/json",
-                transport: 'websocket',
-                trackMessageLength : true,
-                fallbackTransport: 'long-polling'
-            };
+            //var requestBattle = {
+            //    url: urlBattle,
+            //    contentType: "application/json",
+            //    transport: 'websocket',
+            //    trackMessageLength : true,
+            //    fallbackTransport: 'long-polling'
+            //};
 
-            requestBattle.onOpen = function(response){
-                console.log("Conexão aberta battle: "+response.transport);
-            }
+            //requestBattle.onOpen = function(response){
+            //    console.log("Conexão aberta battle: "+response.transport);
+            //}
 
-            requestBattle.onError = function(response){
-                console.log("Erro battle: "+response.transport);
-            }
+            //requestBattle.onError = function(response){
+            //    console.log("Erro battle: "+response.transport);
+            //}
 
-            requestBattle.onMessage = function(response){
-		$scope.received++;
+            //requestBattle.onMessage =
+            var handleMessage = function(response){
+                $scope.received++;
                 var turn = JSON.parse(response.responseBody);
                 if(turn.message){
                     console.log(turn.message);
@@ -587,26 +628,32 @@ app.controller("game", ['$scope', '$element', 'hotkeys', '$resource', function($
                 }
             }
 
-            var subSocketBattle = socket.subscribe(requestBattle);
-            $scope.subSocketBattle = subSocketBattle;
+            //var subSocketBattle = socket.subscribe(requestBattle);
+            //$scope.subSocketBattle = subSocketBattle;
 
             $scope.scene = scene;
         }, defaultErrorCallback)
     }
 
-    $scope.postMessage = function(){
-        $scope.subSocketChat.push(JSON.stringify({author: 'blah', message: $scope.post}));
-    }
+    //$scope.postMessage = function(){
+    //    $scope.subSocketChat.push(JSON.stringify({author: 'blah', message: $scope.post}));
+    //}
 
-    userResource.logged({}, function(logged){
-        var isLogged = logged.username != null;
-        $scope.userLogged = isLogged;
-        if(isLogged){
-            $scope.username = logged.username;
-            $scope.picture = logged.picture;
-            startGame();
+    gapi.load('auth2', function(){
+        auth2 = gapi.auth2.init({
+            client_id: '405402394589-f20c532e75fn33c541jfbu5ta179bko4.apps.googleusercontent.com'
+        });
+        var userTokenId = getTokenIdFromCookie();
+        if(_.isUndefined(userTokenId)){
+            killCookiesAndRedirect();
         } else{
-            window.location.href = "/";
+            $scope.loginFailed = false;
+            $scope.$apply();
+            sessionResource.get({userTokenId: userTokenId}, function(longshotSession){
+                $scope.username = longshotSession.username;
+                $scope.userLogoUrl = longshotSession.userLogoUrl;
+                startGame();
+            });
         }
     });
 
